@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+# -*- mode: ruby; -*-
+require 'sinatra'
+
+configure do
+  # port/ip address
+  set :port, (ENV['SIN_PORT'] || '5000').to_i
+  set :bind, ENV['SIN_IP'] || '0.0.0.0'
+end
+get "*" do
+  "Hello"
+end
+
+get "/favicon.ico" do
+  halt 404
+end
