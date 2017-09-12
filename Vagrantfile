@@ -26,16 +26,16 @@ Vagrant.configure("2") do |config|
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://vagrantcloud.com/search.
   config.vm.box = "ubuntu/trusty64"
+  config.vm.provision :shell, inline: "> /etc/profile.d/set-proxy.sh", run: "always"
   config.vm.provision :shell, path: "vagrant/update-sudoers.sh", env: env
   config.vm.provision :shell, path: "vagrant/bootstrap.sh", env: env
   config.vm.provision :shell, path: "vagrant/install-rvm.sh", args: "stable", privileged: false, env: env
   config.vm.provision :shell, path: "vagrant/install-ruby.sh", args: "2.4 sinatra bundler", privileged: false, env: env
 
   # set proxy for user environment
-  config.vm.provision :shell, inline: "> /etc/profile.d/myvars.sh", run: "always"
   if proxy
-    config.vm.provision :shell, inline: "echo \"export http_proxy=#{ proxy }\" >> /etc/profile.d/myvars.sh", run: "always"
-    config.vm.provision :shell, inline: "echo \"export https_proxy=#{ proxy }\" >> /etc/profile.d/myvars.sh", run: "always"
+    config.vm.provision :shell, inline: "echo \"export http_proxy=#{ proxy }\" >> /etc/profile.d/set-proxy.sh", run: "always"
+    config.vm.provision :shell, inline: "echo \"export https_proxy=#{ proxy }\" >> /etc/profile.d/set-proxy.sh", run: "always"
   end
 
   config.vm.network :forwarded_port, guest: 5000, host: 8000, host_ip: "127.0.0.1"
