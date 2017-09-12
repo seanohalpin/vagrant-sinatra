@@ -18,6 +18,16 @@ env = if proxy
       else
         {}
       end
+
+mysql_env = {
+  "MYSQL_ROOT_PASSWORD" => "root123",
+  "MYSQL_APP_HOST" => "localhost",
+  "MYSQL_APP_DB" => "sinatra_app_db",
+  "MYSQL_APP_USERNAME" => "sinatra_app_user",
+  "MYSQL_APP_PASSWORD" => "app123",
+}
+env = env.merge(mysql_env)
+
 Vagrant.configure("2") do |config|
   # The most common configuration options are documented and commented below.
   # For a complete reference, please see the online documentation at
@@ -27,16 +37,23 @@ Vagrant.configure("2") do |config|
   # boxes at https://vagrantcloud.com/search.
   config.vm.box = "ubuntu/trusty64"
   config.vm.provision :shell, inline: "> /etc/profile.d/set-proxy.sh", run: "always"
+  # Set proxy for login environment
+  if proxy
+    config.vm.provision :shell, inline: "echo \"export http_proxy=#{proxy}\" >> /etc/profile.d/set-proxy.sh", run: "always"
+    config.vm.provision :shell, inline: "echo \"export https_proxy=#{proxy}\" >> /etc/profile.d/set-proxy.sh", run: "always"
+  end
+  config.vm.provision :shell, inline: "> /etc/profile.d/mysql-vars.sh"
+  # Set up application mysql vars
+  mysql_env.each do |key, value|
+    config.vm.provision :shell, inline: "echo \"export #{key}=#{value}\" >> /etc/profile.d/mysql-vars.sh"
+  end
   config.vm.provision :shell, path: "vagrant/update-sudoers.sh", env: env
   config.vm.provision :shell, path: "vagrant/bootstrap.sh", env: env
+  # Expects =MYSQL_PASSWORD= in env
+  config.vm.provision :shell, path: "vagrant/install-mysql.sh", env: env
   config.vm.provision :shell, path: "vagrant/install-rvm.sh", args: "stable", privileged: false, env: env
   config.vm.provision :shell, path: "vagrant/install-ruby.sh", args: "2.4 sinatra bundler", privileged: false, env: env
 
-  # set proxy for user environment
-  if proxy
-    config.vm.provision :shell, inline: "echo \"export http_proxy=#{ proxy }\" >> /etc/profile.d/set-proxy.sh", run: "always"
-    config.vm.provision :shell, inline: "echo \"export https_proxy=#{ proxy }\" >> /etc/profile.d/set-proxy.sh", run: "always"
-  end
 
   config.vm.network :forwarded_port, guest: 5000, host: 8000, host_ip: "127.0.0.1"
 

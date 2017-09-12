@@ -1,5 +1,7 @@
 #!/bin/bash
-# update package metadata
-apt-get update -y
-# install packages
-apt-get install -y libicu-dev cmake gnupg2
+# * Install prerequisites for installing packages
+# ** update package metadata
+apt-get update
+# ** install required packages
+# *** rvm
+apt-get install -y gnupg2
