@@ -3,10 +3,10 @@
 This is a simple Vagrant configuration that works behind our corporate
 proxy.
 
-It shows how to install rvm + ruby in the shell provisioning phase of
-=vagrant up=.
+It shows how to install rvm + ruby and mysql server in the shell
+provisioning phase of =vagrant up=.
 
-The file:./vagrant/ directory contains the provisioning shell scripts.
+The [[file:./vagrant/][./vagrant]] directory contains the provisioning shell scripts.
 
 ** Usage
 
@@ -38,13 +38,26 @@ vagrant ssh
 #+begin_src sh
 vagrant@vagrant-ubuntu-trusty-64:~$ cd /vagrant
 vagrant@vagrant-ubuntu-trusty-64:/vagrant$ bundle
-vagrant@vagrant-ubuntu-trusty-64:/vagrant$ bin/sinatra-test
+vagrant@vagrant-ubuntu-trusty-64:/vagrant$ bin/app.rb
 #+end_src
 
 *** Host: Test app
 
-On the host, browse to http://127.0.0.1:5000
+On the host, browse to http://127.0.0.1:8000
 
 You should see the text:
 
-: Hello
+: [{"id":1,"name":"Rick"},{"id":2,"name":"Morty"}]
+
+** Mysql configuration
+
+The Vagrantfile defines the following environment variables used by
+the mysql installation and ActiveRecord (in [[file:bin/app.rb][bin/app.rb]]).
+
+| Var                 | Example   |
+|---------------------+-----------|
+| MYSQL_ROOT_PASSWORD | root123   |
+| MYSQL_APP_HOST      | localhost |
+| MYSQL_APP_DB        | appdb     |
+| MYSQL_APP_USERNAME  | appuser   |
+| MYSQL_APP_PASSWORD  | user123   |
