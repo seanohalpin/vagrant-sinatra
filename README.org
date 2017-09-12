@@ -16,6 +16,17 @@ The file:./vagrant/ directory contains the provisioning shell scripts.
 vagrant up
 #+end_src
 
+The Vagrantfile will detect whether you're behind a proxy by testing
+whether the =https_proxy= environment variable exists. If it does exist,
+the instance will be configured to use the same proxy. If not, the
+proxy setting code is bypassed.
+
+If you change networks, you can reconfigure with:
+
+#+begin_src sh
+vagrant reload --provision
+#+end_src
+
 *** Host: Shell into vagrant guest instance
 
 #+begin_src sh
