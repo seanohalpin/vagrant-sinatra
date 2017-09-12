@@ -1,0 +1,39 @@
+* Vagrant sinatra with proxy example
+
+This is a simple Vagrant configuration that works behind our corporate
+proxy.
+
+It shows how to install rvm + ruby in the shell provisioning phase of
+=vagrant up=.
+
+The file:./vagrant/ directory contains the provisioning shell scripts.
+
+** Usage
+
+*** Host: Start vagrant
+
+#+begin_src sh
+vagrant up
+#+end_src
+
+*** Host: Shell into vagrant guest instance
+
+#+begin_src sh
+vagrant ssh
+#+end_src
+
+*** Guest: Start sinatra app
+
+#+begin_src sh
+vagrant@vagrant-ubuntu-trusty-64:~$ cd /vagrant
+vagrant@vagrant-ubuntu-trusty-64:/vagrant$ bundle
+vagrant@vagrant-ubuntu-trusty-64:/vagrant$ bin/sinatra-test
+#+end_src
+
+*** Host: Test app
+
+On the host, browse to http://127.0.0.1:5000
+
+You should see the text:
+
+: Hello
