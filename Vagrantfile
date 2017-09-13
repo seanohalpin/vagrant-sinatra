@@ -8,7 +8,7 @@
 #
 
 proxy = ENV["https_proxy"]
-env = if proxy
+proxy_env = if proxy
         {
           "HTTPS_PROXY" => proxy,
           "HTTP_PROXY" => proxy,
@@ -26,7 +26,8 @@ mysql_env = {
   "MYSQL_APP_USERNAME" => "sinatra_app_user",
   "MYSQL_APP_PASSWORD" => "app123",
 }
-env = env.merge(mysql_env)
+
+env = proxy_env.merge(mysql_env)
 
 Vagrant.configure("2") do |config|
   # The most common configuration options are documented and commented below.
@@ -36,24 +37,29 @@ Vagrant.configure("2") do |config|
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://vagrantcloud.com/search.
   config.vm.box = "ubuntu/trusty64"
-  config.vm.provision :shell, inline: "> /etc/profile.d/set-proxy.sh", run: "always"
   # Set proxy for login environment
-  if proxy
-    config.vm.provision :shell, inline: "echo \"export http_proxy=#{proxy}\" >> /etc/profile.d/set-proxy.sh", run: "always"
-    config.vm.provision :shell, inline: "echo \"export https_proxy=#{proxy}\" >> /etc/profile.d/set-proxy.sh", run: "always"
+  config.vm.provision :shell, inline: "> /etc/profile.d/set-proxy.sh", run: "always"
+  proxy_env.each do |key, value|
+    config.vm.provision :shell, inline: "echo \"export #{key}=#{value}\" >> /etc/profile.d/set-proxy.sh", run: "always"
   end
-  config.vm.provision :shell, inline: "> /etc/profile.d/mysql-vars.sh"
   # Set up application mysql vars
+  config.vm.provision :shell, inline: "> /etc/profile.d/mysql-vars.sh"
   mysql_env.each do |key, value|
     config.vm.provision :shell, inline: "echo \"export #{key}=#{value}\" >> /etc/profile.d/mysql-vars.sh"
   end
   config.vm.provision :shell, path: "vagrant/update-sudoers.sh", env: env
   config.vm.provision :shell, path: "vagrant/bootstrap.sh", env: env
-  # Expects =MYSQL_PASSWORD= in env
+  # Expects =mysql_env=
   config.vm.provision :shell, path: "vagrant/install-mysql.sh", env: env
   config.vm.provision :shell, path: "vagrant/install-rvm.sh", args: "stable", privileged: false, env: env
   config.vm.provision :shell, path: "vagrant/install-ruby.sh", args: "2.4 sinatra bundler", privileged: false, env: env
 
+  # Optional steps
+  # Install gems
+  config.vm.provision :shell, name: "bundle", inline: "cd /vagrant && bundle", run: :always, privileged: false
+
+  # Run app
+  config.vm.provision :shell, name: "run", inline: "cd /vagrant && god -c sinatra.god", run: :always, privileged: false
 
   config.vm.network :forwarded_port, guest: 5000, host: 8000, host_ip: "127.0.0.1"
 
