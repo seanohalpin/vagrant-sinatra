@@ -9,13 +9,13 @@
 # | MYSQL_APP_DB        | appdb     |
 # | MYSQL_APP_USERNAME  | appuser   |
 # | MYSQL_APP_PASSWORD  | user123   |
-# ** mysql cmd
-MYSQL_CMD="mysql -u root --password=${MYSQL_ROOT_PASSWORD}"
 # ** Set mysql root password for automatic installation
 debconf-set-selections <<< "mysql-server mysql-server/root_password password ${MYSQL_ROOT_PASSWORD}"
 debconf-set-selections <<< "mysql-server mysql-server/root_password_again password ${MYSQL_ROOT_PASSWORD}"
 # ** Install mysql and client libs
 apt-get install -y mysql-server mysql-client libmysqlclient-dev
+# ** mysql cmd
+MYSQL_CMD="mysql -u root --password=${MYSQL_ROOT_PASSWORD}"
 # ** Replicate mysql_secure_installation
 # =mysql_secure_installation= is not straightforward to automate, so
 # we replicate what it does here

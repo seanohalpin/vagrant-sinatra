@@ -47,20 +47,27 @@ Vagrant.configure("2") do |config|
   mysql_env.each do |key, value|
     config.vm.provision :shell, inline: "echo \"export #{key}=#{value}\" >> /etc/profile.d/mysql-vars.sh"
   end
-  config.vm.provision :shell, path: "vagrant/update-sudoers.sh", env: env
-  config.vm.provision :shell, path: "vagrant/bootstrap.sh", env: env
+  config.vm.provision :shell, name: "update-sudoers", path: "vagrant/update-sudoers.sh", env: env
+  config.vm.provision :shell, name: "bootstrap", path: "vagrant/bootstrap.sh", env: env
   # Expects =mysql_env=
-  config.vm.provision :shell, path: "vagrant/install-mysql.sh", env: env
-  config.vm.provision :shell, path: "vagrant/install-rvm.sh", args: "stable", privileged: false, env: env
-  config.vm.provision :shell, path: "vagrant/install-ruby.sh", args: "2.4 sinatra bundler", privileged: false, env: env
+  config.vm.provision :shell, name: "install-mysql", path: "vagrant/install-mysql.sh", env: env
+  config.vm.provision :shell, name: "install-rvm", path: "vagrant/install-rvm.sh", args: "stable", privileged: false, env: env
+  config.vm.provision :shell, name: "install-ruby", path: "vagrant/install-ruby.sh", args: "2.4 sinatra bundler", privileged: false, env: env
 
   # Optional steps
   # Install gems
   config.vm.provision :shell, name: "bundle", inline: "cd /vagrant && bundle", run: :always, privileged: false
 
   # Run app
-  config.vm.provision :shell, name: "run", inline: "cd /vagrant && god -c sinatra.god", run: :always, privileged: false
+  # config.vm.provision :shell, name: "run", inline: "cd /vagrant && god -c sinatra.god", run: :always, privileged: false
 
+  # Install god service
+  config.vm.provision :shell, name: "install-god-service", inline: "cp /vagrant/systemd/system/god.service /etc/systemd/system/god.service"
+
+  # Run god (hence app)
+  config.vm.provision :shell, name: "start-daemon", path: "vagrant/start-daemon.sh", run: :always
+
+  # Forward port
   config.vm.network :forwarded_port, guest: 5000, host: 8000, host_ip: "127.0.0.1"
 
   # Disable automatic box update checking. If you disable this, then

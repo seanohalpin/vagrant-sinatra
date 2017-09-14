@@ -6,7 +6,14 @@ God.watch do |w|
   w.name     = "sinatra-app"
   w.group    = "web"
   w.interval = 30.seconds
-  w.env      = {}
+  w.uid      = 'vagrant'
+  w.env      = {
+    "MYSQL_ROOT_PASSWORD" => "root123",
+    "MYSQL_APP_HOST"      => "localhost",
+    "MYSQL_APP_DB"        => "sinatra_app_db",
+    "MYSQL_APP_USERNAME"  => "sinatra_app_user",
+    "MYSQL_APP_PASSWORD"  => "app123",
+  }
   w.dir      = SINATRA_HOME
   w.start    = "bin/app.rb"
 

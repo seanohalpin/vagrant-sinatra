@@ -3,10 +3,15 @@
 This is a simple Vagrant configuration that works behind our corporate
 proxy.
 
-It shows how to install rvm + ruby and mysql server in the shell
-provisioning phase of =vagrant up=.
+It shows how to install required software such as rvm + ruby and mysql
+server and how to start your application server automatically under
+the =god= monitoring tool.
 
-The [[file:./vagrant/][./vagrant]] directory contains the provisioning shell scripts.
+See the [[file:./vagrant/][vagrant/]] directory for the shell scripts used in the vagrant
+provisioning phase.
+
+The [[./monitor/][monitor/]] directory contains the scripts for managing the server at
+runtime.
 
 ** Usage
 
@@ -27,18 +32,41 @@ If you change networks, you can reconfigure with:
 vagrant reload --provision
 #+end_src
 
+The provisioning phase will run the scripts in the [[file:./vagrant/][vagrant/]] directory
+to install packages, rvm, ruby and will run =bundle install= in your
+application directory.
+
 *** Host: Shell into vagrant guest instance
 
 #+begin_src sh
 vagrant ssh
 #+end_src
 
-*** Guest: Start sinatra app
+*** Host: Manage sinatra app
+
+The application is started automatically in the provisioning phase by
+using the =god= monitoring tool.
+
+The =god= configuration is in [[file:sinatra.god][sinatra.god]].
+
+**** To get the current status of the app
 
 #+begin_src sh
-vagrant@vagrant-ubuntu-trusty-64:~$ cd /vagrant
-vagrant@vagrant-ubuntu-trusty-64:/vagrant$ bundle
-vagrant@vagrant-ubuntu-trusty-64:/vagrant$ bin/app.rb
+monitor/status
+#+end_src
+
+**** To restart the app
+
+e.g. after changing [[file:bin/app.rb][bin/app.rb]]
+
+#+begin_src sh
+monitor/restart
+#+end_src
+
+**** To stop the app
+
+#+begin_src sh
+monitor/stop
 #+end_src
 
 *** Host: Test app

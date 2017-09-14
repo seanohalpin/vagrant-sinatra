@@ -4,4 +4,4 @@
 apt-get update
 # ** install required packages
 # *** rvm
-apt-get install -y gnupg2
+apt-get install -y gnupg2 systemd

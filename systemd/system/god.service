@@ -1,0 +1,10 @@
+[Unit]
+Description=God: A process monitoring framework in Ruby
+After=network.target
+
+[Service]
+ExecStart=/vagrant/god-start
+ExecStop=/vagrant/god-stop
+
+[Install]
+WantedBy=multi-user.target
