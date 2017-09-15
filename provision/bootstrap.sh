@@ -3,9 +3,9 @@
 # ** update package metadata
 # apt-get update
 # ** install required packages
-# *** rvm
+# *** systemd
 apt-get install -y systemd
-# rbenv
+# *** rbenv
 apt-get install -y git
-# ruby
+# *** ruby
 apt-get install -y libssl-dev libreadline-dev zlib1g-dev
