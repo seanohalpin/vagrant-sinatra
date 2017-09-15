@@ -43,14 +43,14 @@ Vagrant.configure("2") do |config|
   # boxes at https://vagrantcloud.com/search.
   config.vm.box = "ubuntu/trusty64"
   # Set proxy for login environment
-  config.vm.provision :shell, inline: "> /etc/profile.d/set-proxy.sh", run: "always"
+  config.vm.provision :shell, inline: "> /etc/profile.d/env-proxy.sh", run: "always"
   proxy_env.each do |key, value|
-    config.vm.provision :shell, inline: "echo \"export #{key}=#{value}\" >> /etc/profile.d/set-proxy.sh", run: "always"
+    config.vm.provision :shell, inline: "echo \"export #{key}=#{value}\" >> /etc/profile.d/env-proxy.sh", run: "always"
   end
   # Set up application mysql vars
-  config.vm.provision :shell, inline: "> /etc/profile.d/mysql-vars.sh"
+  config.vm.provision :shell, inline: "> /etc/profile.d/env-mysql.sh", run: "always"
   mysql_env.each do |key, value|
-    config.vm.provision :shell, inline: "echo \"export #{key}=#{value}\" >> /etc/profile.d/mysql-vars.sh", run: "always"
+    config.vm.provision :shell, inline: "echo \"export #{key}=#{value}\" >> /etc/profile.d/env-mysql.sh", run: "always"
   end
   config.vm.provision :shell, name: "update-sudoers", path: "provision/update-sudoers.sh", env: env
   config.vm.provision :shell, name: "bootstrap", path: "provision/bootstrap.sh", env: env
@@ -60,8 +60,8 @@ Vagrant.configure("2") do |config|
   # Run this as a separate step so when the next command is run, vagrant will be a member of the group
   config.vm.provision :shell, name: "add-user-to-staff-group", inline: "sudo usermod -a -G staff vagrant"
   config.vm.provision :shell, name: "install-rbenv", path: "provision/install-rbenv.sh", env: env
-  config.vm.provision :file, source: "provision/rbenv-vars.sh", destination: "/tmp/rbenv-vars.sh"
-  config.vm.provision :shell, inline: "mv /tmp/rbenv-vars.sh /etc/profile.d/"
+  config.vm.provision :file, source: "provision/fs/etc/profile.d/rbenv-init.sh", destination: "/tmp/rbenv-init.sh"
+  config.vm.provision :shell, inline: "mv /tmp/rbenv-init.sh /etc/profile.d/"
   config.vm.provision :shell, name: "rbenv-install", inline: "rbenv install #{RBENV_RUBY_VERSION}", env: env
   config.vm.provision :shell, name: "rbenv-global", inline: "rbenv global #{RBENV_RUBY_VERSION}", env: env
   config.vm.provision :shell, name: "gem-bundle", inline: "gem install bundle --no-ri --no-rdoc", env: env
@@ -70,7 +70,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision :shell, name: "bundle", inline: "cd /vagrant && bundle", run: :always, privileged: false
 
   # Install god service
-  config.vm.provision :shell, name: "install-god-service", inline: "cp /vagrant/systemd/system/god.service /etc/systemd/system/god.service"
+  config.vm.provision :shell, name: "install-god-service", inline: "cp /vagrant/provision/fs/etc/systemd/system/god.service /etc/systemd/system/god.service"
 
   # Run app (via god)
   config.vm.provision :shell, name: "start-daemon", path: "provision/start-daemon.sh"
