@@ -3,6 +3,7 @@ Description=God: A process monitoring framework in Ruby
 After=network.target
 
 [Service]
+User=vagrant
 ExecStart=/vagrant/god-start
 ExecStop=/vagrant/god-stop
 

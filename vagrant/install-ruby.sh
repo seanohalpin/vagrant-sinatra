@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-source $HOME/.rvm/scripts/rvm || source /etc/profile.d/rvm.sh
+# source $HOME/.rvm/scripts/rvm || source /etc/profile.d/rvm.sh
+source /etc/profile.d/rvm.sh
 if [ -z "$https_proxy" ]; then
   rvm use --default --install $1
 else
@@ -9,4 +10,4 @@ shift
 if (( $# ))
 then gem install $@
 fi
-rvm cleanup all
+sudo -i rvm cleanup all

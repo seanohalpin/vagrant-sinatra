@@ -2,12 +2,15 @@
 # vi: set ft=ruby :
 SINATRA_HOME = File.dirname(__FILE__)
 
+# SINATRA_HOME = "/vagrant"
+
 God.watch do |w|
   w.name     = "sinatra-app"
   w.group    = "web"
   w.interval = 30.seconds
-  w.uid      = 'vagrant'
+  # w.uid      = 'vagrant' # Note: do not specify uid if User set in /etc/systemd/system/god.service
   w.env      = {
+    "RBENV"               => "2.4.2",
     "MYSQL_ROOT_PASSWORD" => "root123",
     "MYSQL_APP_HOST"      => "localhost",
     "MYSQL_APP_DB"        => "sinatra_app_db",
@@ -15,9 +18,8 @@ God.watch do |w|
     "MYSQL_APP_PASSWORD"  => "app123",
   }
   w.dir      = SINATRA_HOME
-  w.start    = "bin/app.rb"
-
-  w.log = "#{SINATRA_HOME}/log/server.log"
+  w.start    = "#{SINATRA_HOME}/bin/app.rb"
+  w.log      = "#{SINATRA_HOME}/log/server.log"
 
   # retart if memory gets too high
   w.transition(:up, :restart) do |on|

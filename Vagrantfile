@@ -9,15 +9,15 @@
 
 proxy = ENV["https_proxy"]
 proxy_env = if proxy
-        {
-          "HTTPS_PROXY" => proxy,
-          "HTTP_PROXY" => proxy,
-          "https_proxy" => proxy,
-          "http_proxy" => proxy,
-        }
-      else
-        {}
-      end
+              {
+                "HTTPS_PROXY" => proxy,
+                "HTTP_PROXY" => proxy,
+                "https_proxy" => proxy,
+                "http_proxy" => proxy,
+              }
+            else
+              {}
+            end
 
 mysql_env = {
   "MYSQL_ROOT_PASSWORD" => "root123",
@@ -33,6 +33,9 @@ Vagrant.configure("2") do |config|
   # The most common configuration options are documented and commented below.
   # For a complete reference, please see the online documentation at
   # https://docs.vagrantup.com.
+
+  # Forward port
+  config.vm.network :forwarded_port, guest: 5000, host: 8000, host_ip: "127.0.0.1"
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://vagrantcloud.com/search.
@@ -51,10 +54,17 @@ Vagrant.configure("2") do |config|
   config.vm.provision :shell, name: "bootstrap", path: "vagrant/bootstrap.sh", env: env
   # Expects =mysql_env=
   config.vm.provision :shell, name: "install-mysql", path: "vagrant/install-mysql.sh", env: env
-  config.vm.provision :shell, name: "install-rvm", path: "vagrant/install-rvm.sh", args: "stable", privileged: false, env: env
-  config.vm.provision :shell, name: "install-ruby", path: "vagrant/install-ruby.sh", args: "2.4 sinatra bundler", privileged: false, env: env
 
-  # Optional steps
+  # rbenv
+  config.vm.provision :shell, name: "add-user-to-staff-group", inline: "sudo usermod -a -G staff vagrant"
+  config.vm.provision :shell, name: "install-rbenv", path: "vagrant/install-rbenv.sh", env: env
+  config.vm.provision :file, source: "vagrant/rbenv-vars.sh", destination: "/tmp/rbenv-vars.sh"
+  config.vm.provision :shell, inline: "mv /tmp/rbenv-vars.sh /etc/profile.d/"
+  # config.vm.provision :shell, name: "install-ruby", path: "vagrant/install-ruby-rbenv.sh", env: env, privileged: false
+  config.vm.provision :shell, name: "rbenv-install", inline: "rbenv install 2.4.2", env: env
+  config.vm.provision :shell, name: "rbenv-global", inline: "rbenv global 2.4.2", env: env
+  config.vm.provision :shell, name: "gem-bundle", inline: "gem install bundle --no-ri --no-rdoc", env: env
+
   # Install gems
   config.vm.provision :shell, name: "bundle", inline: "cd /vagrant && bundle", run: :always, privileged: false
 
@@ -66,9 +76,6 @@ Vagrant.configure("2") do |config|
 
   # Run god (hence app)
   config.vm.provision :shell, name: "start-daemon", path: "vagrant/start-daemon.sh", run: :always
-
-  # Forward port
-  config.vm.network :forwarded_port, guest: 5000, host: 8000, host_ip: "127.0.0.1"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs

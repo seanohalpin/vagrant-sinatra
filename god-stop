@@ -1,4 +1,4 @@
 #!/bin/bash
-. /home/vagrant/.rvm/scripts/rvm
-cd /vagrant
-/home/vagrant/.rvm/gems/ruby-2.4.1/bin/god quit
+PATH=/usr/local/rbenv/shims:/usr/local/rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+. /etc/profile.d/rbenv-vars.sh
+god -c /vagrant/sinatra.god quit
