@@ -8,7 +8,9 @@ God.watch do |w|
   w.name     = "sinatra-app"
   w.group    = "web"
   w.interval = 30.seconds
-  # w.uid      = 'vagrant' # Note: do not specify uid if User set in /etc/systemd/system/god.service
+  # Don't set w.uid or w.gid when god is not running as root
+  # See https://github.com/mojombo/god/issues/43
+  # w.uid      = 'vagrant'
   w.env      = {
     "RBENV"               => "2.4.2",
     "MYSQL_ROOT_PASSWORD" => "root123",

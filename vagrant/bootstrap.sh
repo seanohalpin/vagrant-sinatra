@@ -4,7 +4,7 @@
 # apt-get update
 # ** install required packages
 # *** rvm
-apt-get install -y gnupg2 systemd
+apt-get install -y systemd
 # rbenv
 apt-get install -y git
 # ruby
