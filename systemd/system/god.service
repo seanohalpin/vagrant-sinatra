@@ -4,8 +4,12 @@ After=network.target
 
 [Service]
 User=vagrant
-ExecStart=/vagrant/god-start
-ExecStop=/vagrant/god-stop
+Environment=PATH=/usr/local/rbenv/shims:/usr/local/rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=RBENV_ROOT=/usr/local/rbenv
+Environment=RBENV_SHELL=bash
+WorkingDirectory=/vagrant
+ExecStart=/usr/local/rbenv/shims/god -c /vagrant/sinatra.god -D
+ExecStop=/usr/local/rbenv/shims/god terminate
 
 [Install]
 WantedBy=multi-user.target
