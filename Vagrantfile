@@ -1,5 +1,6 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+require 'tmpdir'
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
@@ -36,6 +37,28 @@ Vagrant.configure("2") do |config|
   # For a complete reference, please see the online documentation at
   # https://docs.vagrantup.com.
 
+  provision = ->(*params)     { config.vm.provision *params }
+  file      = ->(**kw)        { provision[:file, **kw] }
+  shell     = ->(**kw)        { provision[:shell, **kw, env: env] }
+  inline    = ->(cmd, **kw)   { shell[inline: cmd, **kw] }
+  script    = -> (path, **kw) { shell[path: path, **kw ] }
+  step      = -> (name, **kw) { shell[name: name, path: "provision/#{name}.sh", **kw ] }
+  copy_file = ->(**kw) {
+    source = kw[:source]
+    destination = kw[:destination]
+    source_basename = File.basename(source)
+    if destination[-1] == "/"
+      dest_dir = destination
+      dest_file = File.join(dest_dir, source_basename)
+    else
+      dest_dir = File.dirname(destination)
+      dest_file = destination
+    end
+    tmp_dest = Dir::Tmpname.make_tmpname ["/tmp/", source_basename], nil
+    file[source: source, destination: tmp_dest]
+    inline["mv #{tmp_dest} #{dest_file}"]
+  }
+
   # Forward port
   config.vm.network :forwarded_port, guest: 5000, host: 8000, host_ip: "127.0.0.1"
 
@@ -43,37 +66,37 @@ Vagrant.configure("2") do |config|
   # boxes at https://vagrantcloud.com/search.
   config.vm.box = "ubuntu/trusty64"
   # Set proxy for login environment
-  config.vm.provision :shell, inline: "> /etc/profile.d/env-proxy.sh", run: "always"
+  inline["> /etc/profile.d/env-proxy.sh", run: "always"]
   proxy_env.each do |key, value|
-    config.vm.provision :shell, inline: "echo \"export #{key}=#{value}\" >> /etc/profile.d/env-proxy.sh", run: "always"
+    inline["echo \"export #{key}=#{value}\" >> /etc/profile.d/env-proxy.sh", run: "always"]
   end
   # Set up application mysql vars
-  config.vm.provision :shell, inline: "> /etc/profile.d/env-mysql.sh", run: "always"
+  inline["> /etc/profile.d/env-mysql.sh", run: "always"]
   mysql_env.each do |key, value|
-    config.vm.provision :shell, inline: "echo \"export #{key}=#{value}\" >> /etc/profile.d/env-mysql.sh", run: "always"
+    inline["echo \"export #{key}=#{value}\" >> /etc/profile.d/env-mysql.sh", run: "always"]
   end
-  config.vm.provision :shell, name: "update-sudoers", path: "provision/update-sudoers.sh", env: env
-  config.vm.provision :shell, name: "bootstrap", path: "provision/bootstrap.sh", env: env
+  step["update-sudoers"]
+  step["bootstrap"]
   # Expects =MYSQL_*= vars in =env=
-  config.vm.provision :shell, name: "install-mysql", path: "provision/install-mysql.sh", env: env
+  step["install-mysql"]
   # rbenv
   # Run this as a separate step so when the next command is run, vagrant will be a member of the group
-  config.vm.provision :shell, name: "add-user-to-staff-group", inline: "sudo usermod -a -G staff vagrant"
-  config.vm.provision :shell, name: "install-rbenv", path: "provision/install-rbenv.sh", env: env
-  config.vm.provision :file, source: "provision/fs/etc/profile.d/rbenv-init.sh", destination: "/tmp/rbenv-init.sh"
-  config.vm.provision :shell, inline: "mv /tmp/rbenv-init.sh /etc/profile.d/"
-  config.vm.provision :shell, name: "rbenv-install", inline: "rbenv install #{RBENV_RUBY_VERSION}", env: env
-  config.vm.provision :shell, name: "rbenv-global", inline: "rbenv global #{RBENV_RUBY_VERSION}", env: env
-  config.vm.provision :shell, name: "gem-bundle", inline: "gem install bundle --no-ri --no-rdoc", env: env
+  inline["sudo usermod -a -G staff vagrant", name: "add-to-group"]
+  step["install-rbenv"]
+  copy_file[source: "provision/fs/etc/profile.d/rbenv-init.sh", destination: "/etc/profile.d/"]
+
+  inline["rbenv install #{RBENV_RUBY_VERSION}", name: "rbenv install"]
+  inline["rbenv global #{RBENV_RUBY_VERSION}", name: "rbenv global"]
+  inline["gem install bundle --no-ri --no-rdoc", name: "install bundle"]
 
   # Install gems (as user, not root)
-  config.vm.provision :shell, name: "bundle", inline: "cd /vagrant && bundle", run: :always, privileged: false
+  inline["cd /vagrant && bundle", run: :always, privileged: false, name: "run bundle"]
 
   # Install god service
-  config.vm.provision :shell, name: "install-god-service", inline: "cp /vagrant/provision/fs/etc/systemd/system/god.service /etc/systemd/system/god.service"
+  inline["cp /vagrant/provision/fs/etc/systemd/system/god.service /etc/systemd/system/god.service", name: "install service"]
 
   # Run app (via god)
-  config.vm.provision :shell, name: "start-daemon", path: "provision/start-daemon.sh"
+  step["start-daemon"]
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
