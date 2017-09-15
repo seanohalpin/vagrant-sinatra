@@ -1,2 +1,2 @@
 #!/bin/sh
-vagrant ssh -c "cd /vagrant && god status"
+vagrant ssh -c "sudo systemctl status god.service"

@@ -1,2 +1,2 @@
 #!/bin/sh
-vagrant ssh -c "cd /vagrant && god restart"
+vagrant ssh -c "sudo systemctl restart god.service"

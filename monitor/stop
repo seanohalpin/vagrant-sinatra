@@ -1,2 +1,2 @@
 #!/bin/sh
-vagrant ssh -c "cd /vagrant && god stop"
+vagrant ssh -c "sudo systemctl stop god.service"
