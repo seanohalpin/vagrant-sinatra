@@ -8,7 +8,7 @@ Environment=PATH=/usr/local/rbenv/shims:/usr/local/rbenv/bin:/usr/local/sbin:/us
 Environment=RBENV_ROOT=/usr/local/rbenv
 Environment=RBENV_SHELL=bash
 WorkingDirectory=/vagrant
-ExecStart=/usr/local/rbenv/shims/god -c /vagrant/sinatra.god -D
+ExecStart=/usr/local/rbenv/shims/god -c /vagrant/sinatra.god -l /vagrant/log/god.log -D
 ExecStop=/usr/local/rbenv/shims/god terminate
 
 [Install]

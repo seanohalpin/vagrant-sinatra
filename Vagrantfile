@@ -27,6 +27,8 @@ mysql_env = {
   "MYSQL_APP_PASSWORD" => "app123",
 }
 
+RBENV_RUBY_VERSION = "2.4.2"
+
 env = proxy_env.merge(mysql_env)
 
 Vagrant.configure("2") do |config|
@@ -48,34 +50,30 @@ Vagrant.configure("2") do |config|
   # Set up application mysql vars
   config.vm.provision :shell, inline: "> /etc/profile.d/mysql-vars.sh"
   mysql_env.each do |key, value|
-    config.vm.provision :shell, inline: "echo \"export #{key}=#{value}\" >> /etc/profile.d/mysql-vars.sh"
+    config.vm.provision :shell, inline: "echo \"export #{key}=#{value}\" >> /etc/profile.d/mysql-vars.sh", run: "always"
   end
-  config.vm.provision :shell, name: "update-sudoers", path: "vagrant/update-sudoers.sh", env: env
-  config.vm.provision :shell, name: "bootstrap", path: "vagrant/bootstrap.sh", env: env
-  # Expects =mysql_env=
-  config.vm.provision :shell, name: "install-mysql", path: "vagrant/install-mysql.sh", env: env
-
+  config.vm.provision :shell, name: "update-sudoers", path: "provision/update-sudoers.sh", env: env
+  config.vm.provision :shell, name: "bootstrap", path: "provision/bootstrap.sh", env: env
+  # Expects =MYSQL_*= vars in =env=
+  config.vm.provision :shell, name: "install-mysql", path: "provision/install-mysql.sh", env: env
   # rbenv
+  # Run this as a separate step so when the next command is run, vagrant will be a member of the group
   config.vm.provision :shell, name: "add-user-to-staff-group", inline: "sudo usermod -a -G staff vagrant"
-  config.vm.provision :shell, name: "install-rbenv", path: "vagrant/install-rbenv.sh", env: env
-  config.vm.provision :file, source: "vagrant/rbenv-vars.sh", destination: "/tmp/rbenv-vars.sh"
+  config.vm.provision :shell, name: "install-rbenv", path: "provision/install-rbenv.sh", env: env
+  config.vm.provision :file, source: "provision/rbenv-vars.sh", destination: "/tmp/rbenv-vars.sh"
   config.vm.provision :shell, inline: "mv /tmp/rbenv-vars.sh /etc/profile.d/"
-  # config.vm.provision :shell, name: "install-ruby", path: "vagrant/install-ruby-rbenv.sh", env: env, privileged: false
-  config.vm.provision :shell, name: "rbenv-install", inline: "rbenv install 2.4.2", env: env
-  config.vm.provision :shell, name: "rbenv-global", inline: "rbenv global 2.4.2", env: env
+  config.vm.provision :shell, name: "rbenv-install", inline: "rbenv install #{RBENV_RUBY_VERSION}", env: env
+  config.vm.provision :shell, name: "rbenv-global", inline: "rbenv global #{RBENV_RUBY_VERSION}", env: env
   config.vm.provision :shell, name: "gem-bundle", inline: "gem install bundle --no-ri --no-rdoc", env: env
 
-  # Install gems
+  # Install gems (as user, not root)
   config.vm.provision :shell, name: "bundle", inline: "cd /vagrant && bundle", run: :always, privileged: false
-
-  # Run app
-  # config.vm.provision :shell, name: "run", inline: "cd /vagrant && god -c sinatra.god", run: :always, privileged: false
 
   # Install god service
   config.vm.provision :shell, name: "install-god-service", inline: "cp /vagrant/systemd/system/god.service /etc/systemd/system/god.service"
 
-  # Run god (hence app)
-  config.vm.provision :shell, name: "start-daemon", path: "vagrant/start-daemon.sh", run: :always
+  # Run app (via god)
+  config.vm.provision :shell, name: "start-daemon", path: "provision/start-daemon.sh"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
