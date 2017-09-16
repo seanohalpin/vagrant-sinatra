@@ -43,25 +43,23 @@ Vagrant.configure("2") do |config|
   # Forward port
   config.vm.network :forwarded_port, guest: 5000, host: 8000, host_ip: "127.0.0.1"
 
-  # Every Vagrant development environment requires a box. You can search for
-  # boxes at https://vagrantcloud.com/search.
+  # Every Vagrant development environment requires a box. You can
+  # search for boxes at https://vagrantcloud.com/search.
   config.vm.box = "ubuntu/xenial64"
   # Set proxy for login environment
-  h.truncate "/etc/profile.d/env-proxy.sh", run: "always"
-  proxy_env.each do |key, value|
-    h.append "/etc/profile.d/env-proxy.sh", "export #{key}=#{value}", run: "always"
+  #
+  # Note: run: "always" means this is always run whenever the machine
+  # is started whether or not provisioning has been requested
+  h.new_file "/etc/profile.d/env-proxy.sh", run: "always" do |file|
+    proxy_env.each do |key, value|
+      file.append "export #{key}=#{value}", run: "always"
+    end
   end
-
-#  h.new_file "/etc/profile.d/env-proxy2.sh", run: "always" do |file|
-#    proxy_env.each do |key, value|
-#      file.append "export XXX_#{key}=#{value}", run: "always"
-#    end
-#  end
-
   # Set up application mysql vars
-  h.truncate "/etc/profile.d/env-mysql.sh", run: "always"
-  mysql_env.each do |key, value|
-    h.append "/etc/profile.d/env-mysql.sh", "export #{key}=#{value}", run: "always"
+  h.new_file "/etc/profile.d/env-mysql.sh", run: "always" do |file|
+    mysql_env.each do |key, value|
+      file.append "export #{key}=#{value}", run: "always"
+    end
   end
   h.step "update-sudoers"
   h.step "bootstrap"

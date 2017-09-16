@@ -1,13 +1,17 @@
 * Vagrant sinatra with proxy example
 
+Keywords: vagrant rbenv ruby sinatra mysql ActiveRecord god systemd proxy
+
 This is a simple Vagrant configuration that works behind our corporate
 proxy.
 
-It shows how to install required software such as rvm + ruby and mysql
-server and how to start your application server automatically under
-the =god= monitoring tool.
+Based on Ubuntu 16.04 (Xenial), it shows how to install =ruby= (using
+=rbenv=), =sinatra=, =ActiveRecord= and =mysql= server. The configuration also
+shows how to start your application server automatically when the
+machine boots using the =god= monitoring tool which is itself managed by
+=systemd=.
 
-See the [[file:./vagrant/][vagrant/]] directory for the shell scripts used in the vagrant
+See the [[file:provision/][provision/]] directory for the shell scripts used in the vagrant
 provisioning phase.
 
 The [[./monitor/][monitor/]] directory contains the scripts for managing the server at
@@ -21,10 +25,10 @@ runtime.
 vagrant up
 #+end_src
 
-The Vagrantfile will detect whether you're behind a proxy by testing
-whether the =https_proxy= environment variable exists. If it does exist,
-the instance will be configured to use the same proxy. If not, the
-proxy setting code is bypassed.
+The [[file:./Vagrantfile][Vagrantfile]] will detect whether you're behind a proxy by testing
+whether the =https_proxy= environment variable exists. If it does, the
+instance will be configured to use the same proxy. If not, the proxy
+setting code is bypassed.
 
 If you change networks, you can reconfigure with:
 
@@ -32,9 +36,17 @@ If you change networks, you can reconfigure with:
 vagrant reload --provision
 #+end_src
 
-The provisioning phase will run the scripts in the [[file:./vagrant/][vagrant/]] directory
-to install packages, rvm, ruby and will run =bundle install= in your
-application directory.
+The provisioning phase will run the scripts in the [[file:provision/][provision/]]
+directory to install packages, =rbenv=, =ruby= and will run =bundle install=
+in your application directory.
+
+*** Host: Test app
+
+On the host, browse to http://127.0.0.1:8000
+
+You should see the text:
+
+: [{"id":1,"name":"Rick"},{"id":2,"name":"Morty"}]
 
 *** Host: Shell into vagrant guest instance
 
@@ -45,7 +57,8 @@ vagrant ssh
 *** Host: Manage sinatra app
 
 The application is started automatically in the provisioning phase by
-using the =god= monitoring tool.
+using the =god= monitoring tool (which itself is managed by =systemd= -
+see [[file:./provision/fs/etc/systemd/system/god.service][god.service]]).
 
 The =god= configuration is in [[file:sinatra.god][sinatra.god]].
 
@@ -69,18 +82,10 @@ monitor/restart
 monitor/stop
 #+end_src
 
-*** Host: Test app
-
-On the host, browse to http://127.0.0.1:8000
-
-You should see the text:
-
-: [{"id":1,"name":"Rick"},{"id":2,"name":"Morty"}]
-
 ** Mysql configuration
 
 The Vagrantfile defines the following environment variables used by
-the mysql installation and ActiveRecord (in [[file:bin/app.rb][bin/app.rb]]).
+the =mysql= installation and =ActiveRecord= (in [[file:bin/app.rb][bin/app.rb]]).
 
 | Var                 | Example   |
 |---------------------+-----------|
