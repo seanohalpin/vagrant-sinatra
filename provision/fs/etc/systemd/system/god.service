@@ -3,7 +3,7 @@ Description=God: A process monitoring framework in Ruby
 After=network.target
 
 [Service]
-User=vagrant
+User=ubuntu
 Environment=PATH=/usr/local/rbenv/shims:/usr/local/rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 Environment=RBENV_ROOT=/usr/local/rbenv
 Environment=RBENV_SHELL=bash

@@ -2,10 +2,5 @@
 # * Install prerequisites for installing packages
 # ** update package metadata
 # apt-get update
-# ** install required packages
-# *** systemd
-apt-get install -y systemd
-# *** rbenv
-apt-get install -y git
-# *** ruby
-apt-get install -y libssl-dev libreadline-dev zlib1g-dev
+# ** ruby
+apt-get install -y build-essential libssl-dev libreadline-dev zlib1g-dev

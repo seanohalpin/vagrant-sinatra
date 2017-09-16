@@ -45,7 +45,7 @@ Vagrant.configure("2") do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://vagrantcloud.com/search.
-  config.vm.box = "ubuntu/trusty64"
+  config.vm.box = "ubuntu/xenial64"
   # Set proxy for login environment
   h.truncate "/etc/profile.d/env-proxy.sh", run: "always"
   proxy_env.each do |key, value|
