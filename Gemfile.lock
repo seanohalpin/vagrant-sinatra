@@ -17,15 +17,15 @@ GEM
     god (0.13.7)
     i18n (0.8.6)
     minitest (5.10.3)
-    mustermann (1.0.1)
+    mustermann (1.0.3)
     mysql2 (0.4.9)
-    rack (2.0.3)
-    rack-protection (2.0.0)
+    rack (2.0.5)
+    rack-protection (2.0.4)
       rack
-    sinatra (2.0.0)
+    sinatra (2.0.4)
       mustermann (~> 1.0)
       rack (~> 2.0)
-      rack-protection (= 2.0.0)
+      rack-protection (= 2.0.4)
       tilt (~> 2.0)
     thread_safe (0.3.6)
     tilt (2.0.8)
@@ -39,7 +39,7 @@ DEPENDENCIES
   activerecord
   god
   mysql2
-  sinatra
+  sinatra (> 2.0)
 
 BUNDLED WITH
-   1.15.4
+   1.16.2
